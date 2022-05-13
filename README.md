@@ -21,4 +21,5 @@ Then `run` main.py!!!
 
 # Powered By
 
-![Employee data](http://imageurl "Employee Data title")
+![Panda3d logo](https://raw.githubusercontent.com/luis605/Space-Exploration/main/docs/images/panda3d_logo1.jpg "Employee Data title")
+![Ursina logo](https://raw.githubusercontent.com/luis605/Space-Exploration/main/docs/images/ursina_logo1.jpg "Employee Data title")
