@@ -9,7 +9,17 @@ from panda3d.core import *
 from panda3d import *
 
 from pandac.PandaModules import ClockObject
+from pandac.PandaModules import *
 
+
+from direct.showbase.DirectObject import DirectObject
+from direct.gui.DirectGui import *
+import sys
+
+
+from panda3d.core import WindowProperties
+from direct.showbase.DirectObject import DirectObject
+from direct.gui.OnscreenText import OnscreenText
 
 Text.default_resolution = 1080 * Text.size
 
@@ -18,7 +28,7 @@ Text.default_resolution = 1080 * Text.size
 
 
 class MainMenu(Entity):
-    def __init__(self, player, pivot, direc_light, amb_light, music):
+    def __init__(self, player, pivot, direc_light, amb_light, music, esc_status):
         super().__init__(
             parent = camera.ui
         )
@@ -34,31 +44,39 @@ class MainMenu(Entity):
         Text.default_font = font
 
 
-        self.main_menu = Entity(parent = self, enabled = True)
-        self.settings = Entity(parent = self, enabled = False)
+        self.wp = WindowProperties()
 
-        self.graph_settings = Entity(parent = self, enabled = False)
-        self.audio_settings = Entity(parent = self, enabled = False)
+
+
+        self.main = Entity(parent = self, enabled = True)
+
+        self.main_menu = Entity(parent = self.main, enabled = True)
+        self.settings = Entity(parent = self.main, enabled = False)
+
+        self.graph_settings = Entity(parent = self.settings, enabled = False)
+        self.audio_settings = Entity(parent = self.settings, enabled = False)
 
         self.player = player
         window.exit_button.visible = True
 
 
-
-
-
-        self.Frame_audio = DirectFrame(frameColor=(0, 0, 0, 0.5),
-                                       frameSize=(-1, 1, -1, 1),
-                                       pos=(0, 0, 0))
-
-        self.Frame_audio.hide()
+        self.player.disable()
             
 
-        self.Frame = DirectFrame(frameColor=(0, 0, 0, 0.5),
-                                 frameSize=(-1, 1, -1, 1),
-                                 pos=(0, 0, 0))
-                
-        application.paused = True
+
+
+
+        if esc_status == 0:
+##            Frame_audio.show()
+##            graphics.Frame.show()
+            self.player.disable()
+        elif esc_status == 1:
+            self.player.enable()
+##            Frame_audio.hide()
+##            Frame.hide()
+            
+        
+#        application.paused = True
 
         def settings():
             #self.player.enable()
@@ -79,11 +97,18 @@ class MainMenu(Entity):
             mouse.locked = True
             self.main_menu.disable()
 
+            self.player.position = (0,0,2)
+
         def graphics():
             self.settings.disable()
 
+            Frame = DirectFrame(frameColor=(0, 0, 0, 0.5),
+                                     frameSize=(-1, 1, -1, 1),
+                                     pos=(0, 0, 0))
+            
             v = [0]
             vs = [0]
+            vr = [0]
 
 
 
@@ -91,7 +116,7 @@ class MainMenu(Entity):
 
 
             Title = OnscreenText(text = "[ Graphics ]",
-                    parent = self.Frame,
+                    parent = Frame,
                     bg=(0,0,0,0),
                     fg=(255,255,255,1),
                     scale = 0.1,
@@ -99,17 +124,27 @@ class MainMenu(Entity):
                     font = self.font)
 
             Fps_Limit = OnscreenText(text = "[ FPS Limit ]",
-                    parent = self.Frame,
+                    parent = Frame,
                     bg=(0,0,0,0),
                     fg=(200,200,200,1),
                     scale = 0.05,
                     pos = (0, 0.6, 0.2),
                     font = self.font)
 
+            Fps_Limit = OnscreenText(text = "[ Resolution ]",
+                    parent = Frame,
+                    bg=(0,0,0,0),
+                    fg=(200,200,200,1),
+                    scale = 0.05,
+                    pos = (0, -0.6, 0.2),
+                    font = self.font)
+
 
             #clear the text
             def clearText():
                 entry.enterText('')
+
+
 
             def setText(textEntered):
 
@@ -146,7 +181,7 @@ class MainMenu(Entity):
 
             # Add button
             buttons = [
-                DirectRadioButton(parent = self.Frame,
+                DirectRadioButton(parent = Frame,
                                   text='Enabled',
                                   variable=v,
                                   value=[0],
@@ -155,7 +190,7 @@ class MainMenu(Entity):
                                   #boxGeom="image.jpg",
                                   command=setFpsONOFF),
                 
-                DirectRadioButton(parent = self.Frame,
+                DirectRadioButton(parent = Frame,
                                   text='Disabled',
                                   variable=v,
                                   value=[1],
@@ -174,7 +209,7 @@ class MainMenu(Entity):
 
 
             Shadows_Quality = OnscreenText(text = "[ Shadows Quality ]",
-                    parent = self.Frame,
+                    parent = Frame,
                     bg=(0,0,0,0),
                     fg=(200,200,200,1),
                     scale = 0.05,
@@ -209,7 +244,7 @@ class MainMenu(Entity):
 
             # Add button
             ShadowState = [
-                DirectRadioButton(parent = self.Frame,
+                DirectRadioButton(parent = Frame,
                                   text='  High  ',
                                   variable=vs,
                                   value=[0],
@@ -218,7 +253,7 @@ class MainMenu(Entity):
                                   #boxGeom="image.jpg",
                                   command=setShadows),
                 
-                DirectRadioButton(parent = self.Frame,
+                DirectRadioButton(parent = Frame,
                                   text='Medium',
                                   variable=vs,
                                   value=[1],
@@ -226,7 +261,7 @@ class MainMenu(Entity):
                                   pos=(0, -0.3, 0),
                                   command=setShadows),
 
-                DirectRadioButton(parent = self.Frame,
+                DirectRadioButton(parent = Frame,
                                   text='  None  ',
                                   variable=vs,
                                   value=[2],
@@ -244,9 +279,88 @@ class MainMenu(Entity):
 
 
 
+
+            Shadows_Quality = OnscreenText(text = "[ Shadows Quality ]",
+                    parent = Frame,
+                    bg=(0,0,0,0),
+                    fg=(200,200,200,1),
+                    scale = 0.05,
+                    pos = (0, -0.05, 0.2),
+                    font = self.font)
+
+
+
+    
+
+
+
+                    
+            def changeResolution():
+                #print (v)
+
+
+                    
+                if vs == [0]:
+                    print("Resolution - 1920, 1080")
+##                    self.setResolution, extraArgs = [ 1920, 1080 ]
+
+
+                    window.windowed_size = 0.3
+                    window.update_aspect_ratio()
+                    
+                elif vs == [1]:
+                    print("Resolution - 800, 600")
+                    window.windowed_size = 0.1
+                    window.update_aspect_ratio()
+
+                elif vs == [2]:
+                    print("Resolution - 400, 300")
+
+
+
+            # Add button
+            ResoBTN = [
+                DirectRadioButton(parent = Frame,
+                                  text='  High  ',
+                                  variable=vs,
+                                  value=[0],
+                                  scale=0.05,
+                                  pos=(0, -0.7, 0),
+                                  #boxGeom="image.jpg",
+                                  command=changeResolution),
+                
+                DirectRadioButton(parent = Frame,
+                                  text='Medium',
+                                  variable=vs,
+                                  value=[1],
+                                  scale=0.05,
+                                  pos=(0, -0.8, 0),
+                                  command=changeResolution),
+
+                DirectRadioButton(parent = Frame,
+                                  text='  Low  ',
+                                  variable=vs,
+                                  value=[2],
+                                  scale=0.05,
+                                  pos=(0, -0.9, 0),
+                                  command=changeResolution),
+
+            ]
+
+            for button in ResoBTN:
+                button.setOthers(ResoBTN)
+
+
         def audio():
             self.settings.disable()
 
+
+
+
+
+            Frame_audio = DirectFrame(frameColor=(0, 0, 0, 0.5),
+                                           frameSize=(-1, 1, -1, 1),
+                                           pos=(0, 0, 0))
 
 
 
@@ -254,7 +368,7 @@ class MainMenu(Entity):
 
 
             Title_audio = OnscreenText(text = "[ Audio ]",
-                    parent = self.Frame_audio,
+                    parent = Frame_audio,
                     bg=(0,0,0,0),
                     fg=(255,255,255,1),
                     scale = 0.1,
@@ -299,4 +413,20 @@ class MainMenu(Entity):
         settings_button.on_click = Func(settings)
         continue_button.on_click = Func(conti)
         reset_button.on_click = Func(reset)
+
+
+
+
+    def setResolution( self, w, h ):
+        wp = WindowProperties()
+        wp.setSize( w, h )
+        wp.setFullscreen( True )
+        import os
+        if os.name == 'posix':
+          base.openMainWindow()
+          base.graphicsEngine.openWindows()
+        base.win.requestProperties( wp )
+
+
+                    
 
