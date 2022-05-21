@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="297mm"
+   height="210mm"
+   viewBox="0 0 297 210"
+   version="1.1"
+   id="svg8"
+   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)"
+   sodipodi:docname="main_image.svg"
+   inkscape:export-filename="/home/lixt/Desktop/1SpaceExploration/base/10/assets/images/loading_screen/main_image.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.35"
+     inkscape:cx="-208.57143"
+     inkscape:cy="560"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1366"
+     inkscape:window-height="703"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-87)">
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.51977634px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26299441"
+       x="89.788673"
+       y="187.90736"
+       id="text3715"
+       transform="scale(0.99399459,1.0060417)"><tspan
+         sodipodi:role="line"
+         id="tspan3713"
+         x="89.788673"
+         y="187.90736"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:System-ui;-inkscape-font-specification:'System-ui Bold';stroke-width:0.26299441;fill:#ffffff">Space Exploration</tspan></text>
+    <rect
+       style="fill:#1a1a1a;stroke-width:2.23625064;paint-order:fill markers stroke"
+       id="rect3717"
+       width="359.83331"
+       height="233.58928"
+       x="-28.726191"
+       y="73.238106" />
+    <text
+       transform="scale(0.99399459,1.0060417)"
+       id="text3721"
+       y="187.90736"
+       x="89.788673"
+       style="font-style:normal;font-weight:normal;font-size:10.51977634px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26299441"
+       xml:space="preserve"><tspan
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:System-ui;-inkscape-font-specification:'System-ui Bold';stroke-width:0.26299441;fill:#ffffff"
+         y="187.90736"
+         x="89.788673"
+         id="tspan3719"
+         sodipodi:role="line">Space Exploration</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.51977634px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26299441"
+       x="89.788673"
+       y="187.90736"
+       id="text3725"
+       transform="scale(0.99399459,1.0060417)"><tspan
+         sodipodi:role="line"
+         id="tspan3723"
+         x="89.788673"
+         y="187.90736"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:System-ui;-inkscape-font-specification:'System-ui Bold';stroke-width:0.26299441;fill:#cccccc">Space Exploration</tspan></text>
+    <text
+       transform="scale(1.1003063,0.90883788)"
+       id="text3729"
+       y="230.10529"
+       x="81.098831"
+       style="font-style:normal;font-weight:normal;font-size:13.36386204px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#666666;fill-opacity:1;stroke:none;stroke-width:0.33409658"
+       xml:space="preserve"><tspan
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:9.78928375px;font-family:System-ui;-inkscape-font-specification:'System-ui Bold';fill:#666666;stroke-width:0.33409658"
+         y="230.10529"
+         x="81.098831"
+         id="tspan3727"
+         sodipodi:role="line">A New Adventure   </tspan></text>
+  </g>
+</svg>
