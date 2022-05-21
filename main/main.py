@@ -7,42 +7,49 @@ from ursina.prefabs.health_bar import *
 from ursina.shaders import lit_with_shadows_shader
 #from ursina.shaders.screenspace_shaders import camera_grayscale
 
-from ursina.scripts.merge_vertices import *
 from ursina.prefabs.button_list import *
 
 # panda3d
 from direct.showbase.DirectObject import DirectObject
+from direct.task import Task
+from direct.actor.Actor import Actor
+from direct.filter.CommonFilters import CommonFilters
+from direct.filter.FilterManager import FilterManager
 
-from pandac.PandaModules import ClockObject
+from pandac.PandaModules import *
 from direct.gui.DirectGui import *
-from panda3d.core import *
+
 from panda3d import *
-
-
 
 # random, os, pickle, etc
 from random import randint,randrange
 import pickle # added
 import os # added
 from time import perf_counter
+import threading
+from math import sin, cos
 
 
 # game modules
 from game.gui.mainmenu import MainMenu
 from game.gui.inventory import Inventory
-from game.world.generator.world_generator import Generate_Terrain
 
+from game.archivements.firstTime import FirstTime
 
-    
-
-
+from game.common.SpashScreen import SpashScreenInit
+from game.common.world.generator.world_generator import Generate_Terrain
+from game.common.world.lights.lights import Lights
+from game.common.bots.bots import AIPathFinder
 
 # Vars                                  
 key_f = 0
 key_esc = 0
+key_walk = 0
 fly_key = 0
 
 distance_mouse_create = 0
+
+
 
 
 
@@ -53,13 +60,29 @@ app = Ursina()
 
 # Window configs
 window.title = 'Space Exploration' # The window title
-window.borderless = False
+#window.borderless = False
 window.color = color.dark_gray 
+window.cog_button.enabled = False
+
+window.exit_button.text = 'Exit'
+window.exit_button.color = color.gray
 
 
+
+def starting():
+
+    SpashScreenInit()
+#    level.bow.enabled = True
+
+
+
+starting()
+    
 # Fog
-scene.fog_density=(0,75)
-scene.fog_color=color.white
+myFog = Fog("Far Away Fog")
+myFog.setColor(100,100, 100)
+myFog.setExpDensity(1)
+render.setFog(myFog)
 
 
 # Shadows and shaders
@@ -67,14 +90,25 @@ Entity.default_shader = lit_with_shadows_shader
 
 # Perlin Noise
 #noise = PerlinNoise(octaves=3, seed=randint(1,1000000000))
+seed=randint(1,1000000000)
 
 
 # Optimization
 voxel_scene = Entity(model=Mesh(vertices=[], uvs=[]), collider = 'mesh')
 
 
-#spaceShip
-#Rover = Entity()
+
+
+filters = CommonFilters(base.win, base.cam)
+#filters.setBloom()
+
+
+
+##manager = FilterManager(base.win, base.cam)
+##tex = Texture()
+##quad = manager.renderSceneInto(colortex=tex)
+##quad.setShader(Shader.load("myfilter.sha"))
+##quad.setShaderInput("tex", tex)
 
 
 
@@ -98,17 +132,33 @@ cube = 'cube'
 sphere = 'sphere'
 
 
+# Load sounds
 music = Audio('Art-Of-Silence_V2.mp3', pitch=1, loop=True, autoplay=True)
 print(music.clip)
-music.volume=1
+music.volume=0
 music_b = Audio(music.clip)
+music_b.volume = 0
+
+from direct.showbase import Audio3DManager
+audio3d = Audio3DManager.Audio3DManager(base.sfxManagerList[0], camera)
+
+###
+jumpSd = base.loader.loadSfx('assets/audio/effects/jump.mp3')
+menuSd = base.loader.loadSfx('assets/audio/effects/menu-pop.mp3')
+runningSd = base.loader.loadSfx('assets/audio/walk/grass_walk.ogg.mp3')
+runningSd.setLoop(True)
+runningSd.setVolume(0.075)
+runningSd.play()
+
+status = runningSd.status()
+print("Status: " + str(status))
 
 
-
-pivot = Entity()
-direc_light = Ursina_DirectionalLight(parent=pivot, y=2, z=3, shadows=True, rotation=(45, -45, 45))
-amb_light = Ursina_AmbientLight(parent=pivot, color = color.rgba(100, 100, 100, 0.1))
-
+# Lights
+Lights()
+pivot = Lights().pivot
+direc_light = Lights().direc_light
+amb_light = Lights().amb_light
 
 
 
@@ -126,26 +176,24 @@ def update():
     if held_keys['g']:
         save_game()
 
-    if held_keys['shift'] and held_keys['w']:
+    if held_keys['shift']:
         player.speed=10
         
 
 
-#    if held_keys['k']:
-#        Rocket()
-        
 
-
-
-
+    
 def input(key):
     
-        global block_id, hand, key_f, key_esc, fly_key, distance_mouse_create
+        global block_id, hand, key_f, key_esc, key_walk, fly_key, distance_mouse_create
         if key.isdigit():
             block_id = int(key)
             if block_id >= len(blocks):
                 block_id = len(blocks) - 1
             Hand(texture = blocks[block_id])
+
+
+
 
 
 
@@ -181,18 +229,14 @@ def input(key):
                         
         if key == 'escape' and key_esc == 0:
             key_esc = 1
-#            quit()
-            player.enabled = False
-            mainmenu = MainMenu(player, pivot, direc_light, amb_light, music_b)
-            mainmenu = MainMenu(player, pivot, direc_light, amb_light, music_b).Frame_audio.hide()
-        elif (key == 'escape' and key_esc == 1):
+#            player.enabled = False
+            #            quit()
+            mainmenu = MainMenu(player, pivot, direc_light, amb_light, music_b, key_esc)
+#        elif (key == 'escape' and key_esc == 1):
             key_esc = 0
-            application.paused = False
-##            player.enable()
-            MainMenu(player, pivot, direc_light, amb_light, music_b).main_menu.disable()
-            MainMenu(player, pivot, direc_light, amb_light, music_b).Frame.hide()
-            MainMenu(player, pivot, direc_light, amb_light, music_b).Frame_audio.hide()
-#            MainMenu(player, pivot, direc_light, amb_light, music_b).main_menu.visible = False
+            MainMenu(player, pivot, direc_light, amb_light, music_b, key_esc).main.enabled = False#            mainmenu = MainMenu(player, pivot, direc_light, amb_light, music_b, key_esc)
+#            player.enable()
+#            MainMenu(player, pivot, direc_light, amb_light, music_b, key_esc).main_menu.visible = False
 
 
             
@@ -200,6 +244,17 @@ def input(key):
         if key == 'w':
             player.speed=5
 
+
+            runningSd.setPlayRate(1.0)
+            runningSd.setTime(1)
+            runningSd.play()
+
+                    ##            if key_walk == 0:
+##                key_walk = 1
+##                grass_walk_b.resume()
+##            else:
+##                key_walk = 0
+            
         if (key == 'j' and fly_key == 1):
             fly_key = 0
             print("Flying")
@@ -257,10 +312,7 @@ def inventory_enable():
     
 
 
-
-
-
-
+     
 class Hand(Entity):
     def __init__(self, texture):
         super().__init__(
@@ -293,34 +345,42 @@ class Voxel(Button):
         
 
     def input(self, key):
-
         if self.hovered:
-
-
-##            print(player.position)
-##            print(self.position)
-##
-##            p_pos = player.position
-##            s_pos = self.position
-
-##            print(p_pos - s_pos)
-
-##            rocket.position(p_pos - s_pos)
-
-            
-
             if key == "left mouse down":
-                
-                model = cube
 
-                voxel = Voxel(cube, position=self.position + mouse.normal, texture = blocks[block_id])
-                pos = self.position + mouse.normal
-                game_data.append([cube, (pos.x,pos.y,pos.z),blocks[block_id]])
+                if (blocks[block_id] == 5):
+                    print("Lauching arrow")
+                    player.arrow = duplicate(level.arrow, world_parent=level.bow, position=Vec3(-.2,0,0), rotation=Vec3(0,0,0))
+                    player.arrow.animate('position', player.arrow.position+Vec3(0,0,-2), duration=.2, curve=curve.linear)
 
+                else:
+                    
+                    model = cube
 
+                    voxel = Voxel(model, position=self.position + mouse.normal, texture = blocks[block_id])
+                    pos = self.position + mouse.normal
+                    game_data.append([model, (pos.x,pos.y,pos.z),blocks[block_id]])
 
             if key == 'right mouse down':
                 destroy(self)
+
+
+class WorldMesh(Button):
+    def __init__(self, model, position = (0,0,0), texture = blocks[block_id]):
+        super().__init__(
+            parent=voxel_scene,
+            model=model,
+            color=color.white,
+            texture=texture,
+            position=position,
+            origin_y=0.5,
+            shader=lit_with_shadows_shader,
+            collider="mesh"
+        )
+        
+
+
+
 
 
 
@@ -378,7 +438,9 @@ class Rocket(Entity):
 
 
 
-    def go_up(self):    
+    def go_up(self):
+
+        rocket.shake(duration=.2, magnitude=1, speed=.05, direction=(1,1))
 
 
         self.grounded = False
@@ -399,7 +461,18 @@ class Rocket(Entity):
 
 
 
+
+
+
+
+
+
+
         
+
+
+
+
 
 
 
@@ -414,18 +487,21 @@ def load_basic_game():
 
 
 
-    world = Generate_Terrain(50,#xsize
-                             50,#ysize
+    world = Generate_Terrain(150,#xsize
+                             150,#ysize
                              5,#frequency(how frequently new mountains generate)
                              5,#amplitude(how high or low the mountains will be)
                              1,#octaves(how many mountains there will be)
-                             300#seed(random number)
+                             seed#seed(random number)
                             )
     #required command Generate_world which will create the model via given args
     model = world.Generate_World()
 
+    game_data.append(world)
+
+
     #e = Entity(model=model,collider='mesh',texture='grass')
-    e = Voxel(model, texture = 'grass.png')
+    world_model = WorldMesh(model, texture = 'grass.png')
 
 
 
@@ -433,9 +509,22 @@ def load_basic_game():
 def load_saved_game():
     saved_game = pickle.load(open("game_stage.pickle", "rb", -1))
     for data in saved_game:
-#        print(data)#            rocket.animate_y(rocket.y+self.jump_height, self.jump_up_duration, resolution=int(1//time.dt), curve=curve.out_expo)
+        print(data)#            rocket.animate_y(rocket.y+self.jump_height, self.jump_up_duration, resolution=int(1//time.dt), curve=curve.out_expo)
 
-        voxel = Voxel(data[2], data[0], texture = data[1])
+        try:
+            voxel = Voxel(data[2], data[0], texture = data[1])
+        except TypeError:
+            world = Generate_Terrain(50,#xsize
+                                     50,#ysize
+                                     60,#frequency(how frequently new mountains generate)
+                                     5,#amplitude(how high or low the mountains will be)
+                                     1,#octaves(how many mountains there will be)
+                                     seed#seed(random number)
+                                    )
+            model = world.Generate_World()
+            world_model = WorldMesh(model, texture = 'grass.png')
+
+
         game_data.append(data)
 
 
@@ -452,14 +541,21 @@ key_f = 0
 
 rocket = Voxel('assets/blend/player_test1.obj', [0,0,0],None)
 
-player = FirstPersonController(model='assets/blend/player_test1.obj', collider='mesh', scale = 1, color=color.rgba(0,0,0,.3))
-#player = FirstPersonController()
-#EditorCamera()
+player = FirstPersonController(model='assets/blend/player_test1.obj', collider='mesh', scale = 1, color=color.rgba(0,0,0,.3), rotation = Vec3(0,0,0))
+
 window.exit_button.visible = False
 Sky(texture=sky_texture)
 
 
 
+#ARCHIVEMENTS
+FirstTime()
+   
+
+#BOTS
+AIPathFinder(player)
+
 
 
 app.run()
+
