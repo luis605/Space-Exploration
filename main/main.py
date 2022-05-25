@@ -22,11 +22,12 @@ from direct.gui.DirectGui import *
 from panda3d import *
 
 # random, os, pickle, etc
-from random import randint,randrange
 import pickle # added
 import os # added
-from time import perf_counter
 import threading
+
+from random import randint,randrange
+from time import perf_counter
 from math import sin, cos
 
 
@@ -35,11 +36,16 @@ from game.gui.mainmenu import MainMenu
 from game.gui.inventory import Inventory
 
 from game.archivements.firstTime import FirstTime
+from game.archivements.ten_minutes import TenMinutes
 
-from game.common.SpashScreen import SpashScreenInit
-from game.common.world.generator.world_generator import Generate_Terrain
-from game.common.world.lights.lights import Lights
-from game.common.bots.bots import AIPathFinder
+from game.main.SpashScreen import SpashScreenInit
+from game.main.world.generator.world_generator import Generate_Terrain
+from game.main.world.lights.lights import Lights
+from game.main.bots.bots import AIPathFinder
+
+from game.main.GameSystem.oxygen import SetOxygen
+from game.main.GameSystem.health import SetHealth
+from game.main.GameSystem.messageBox import MessageBox
 
 # Vars                                  
 key_f = 0
@@ -48,9 +54,6 @@ key_walk = 0
 fly_key = 0
 
 distance_mouse_create = 0
-
-
-
 
 
 
@@ -70,14 +73,18 @@ window.exit_button.color = color.gray
 
 
 def starting():
-
     SpashScreenInit()
+
 #    level.bow.enabled = True
 
 
 
 starting()
-    
+
+#Setting up player
+player = FirstPersonController(model='assets/blend/player_test1.blend', collider='mesh', scale = 1, color=color.rgba(0,0,0,.3), rotation = Vec3(0,0,0))
+
+
 # Fog
 myFog = Fog("Far Away Fog")
 myFog.setColor(100,100, 100)
@@ -100,15 +107,6 @@ voxel_scene = Entity(model=Mesh(vertices=[], uvs=[]), collider = 'mesh')
 
 
 filters = CommonFilters(base.win, base.cam)
-#filters.setBloom()
-
-
-
-##manager = FilterManager(base.win, base.cam)
-##tex = Texture()
-##quad = manager.renderSceneInto(colortex=tex)
-##quad.setShader(Shader.load("myfilter.sha"))
-##quad.setShaderInput("tex", tex)
 
 
 
@@ -145,10 +143,14 @@ audio3d = Audio3DManager.Audio3DManager(base.sfxManagerList[0], camera)
 ###
 jumpSd = base.loader.loadSfx('assets/audio/effects/jump.mp3')
 menuSd = base.loader.loadSfx('assets/audio/effects/menu-pop.mp3')
-runningSd = base.loader.loadSfx('assets/audio/walk/grass_walk.ogg.mp3')
+runningSd = loader.loadSfx('assets/audio/walk/grass_walk.wav')
+
+audio3d.attachSoundToObject(runningSd, player)
+
 runningSd.setLoop(True)
-runningSd.setVolume(0.075)
 runningSd.play()
+
+runningSd.stop()
 
 status = runningSd.status()
 print("Status: " + str(status))
@@ -162,13 +164,15 @@ amb_light = Lights().amb_light
 
 
 
-
-health_bar_1 = HealthBar(bar_color=color.lime.tint(-.25), roundness=.5, value=100)
+# Animations
+player_walk = FrameAnimation3d('assets/blend/player_walk.obj',fps=1)
 
 
 def update():
 
 #    print(mouse.hovered_entity)
+
+    global key_walk, start_time
 
 
 
@@ -180,8 +184,23 @@ def update():
         player.speed=10
         
 
+    if held_keys['w'] and key_walk == 0:
+        key_walk = 1
 
+        runningSd.setPlayRate(1.0)
+        runningSd.setTime(1)
+        runningSd.play()
+    elif held_keys['w'] and key_walk == 1:
+        key_walk = 0
 
+        runningSd.setPlayRate(1.0)
+        runningSd.setTime(1)
+        runningSd.stop()
+
+    try:
+        print(start_time - time.perf_count)
+    except Exception as e:
+        print(e)
     
 def input(key):
     
@@ -213,10 +232,7 @@ def input(key):
 # AGORA fazer scroll na colocação de objetos (Camera e player em VOXEL)            
 
         
-        if key == '+' or key == '+ hold':
-            health_bar_1.value += 10
-        if key == '-' or key == '- hold':
-            health_bar_1.value -= 10
+
 
         if key == 'v':
             a.fade_out(duration=4, curve=curve.linear)
@@ -243,17 +259,6 @@ def input(key):
             
         if key == 'w':
             player.speed=5
-
-
-            runningSd.setPlayRate(1.0)
-            runningSd.setTime(1)
-            runningSd.play()
-
-                    ##            if key_walk == 0:
-##                key_walk = 1
-##                grass_walk_b.resume()
-##            else:
-##                key_walk = 0
             
         if (key == 'j' and fly_key == 1):
             fly_key = 0
@@ -282,11 +287,8 @@ def input(key):
 
 
 def fly():
-
-
-    player.animate_y(rocket.y+3, 2, resolution=int(1//time.dt), curve=curve.out_expo)
-
-            
+    print("oi")
+    
 def notFly():
     air_time = 0
 
@@ -440,7 +442,7 @@ class Rocket(Entity):
 
     def go_up(self):
 
-        rocket.shake(duration=.2, magnitude=1, speed=.05, direction=(1,1))
+##        rocket.shake(duration=.2, magnitude=.001, speed=.01, direction=(1,1))
 
 
         self.grounded = False
@@ -483,6 +485,8 @@ def save_game():
     with open("game_stage.pickle", "wb") as file_:
         pickle.dump(game_data, file_, -1)
 
+
+
 def load_basic_game():
 
 
@@ -494,6 +498,7 @@ def load_basic_game():
                              1,#octaves(how many mountains there will be)
                              seed#seed(random number)
                             )
+    print("world", world)
     #required command Generate_world which will create the model via given args
     model = world.Generate_World()
 
@@ -514,8 +519,8 @@ def load_saved_game():
         try:
             voxel = Voxel(data[2], data[0], texture = data[1])
         except TypeError:
-            world = Generate_Terrain(50,#xsize
-                                     50,#ysize
+            world = Generate_Terrain(70,#xsize
+                                     70,#ysize
                                      60,#frequency(how frequently new mountains generate)
                                      5,#amplitude(how high or low the mountains will be)
                                      1,#octaves(how many mountains there will be)
@@ -535,13 +540,10 @@ else:
     save_game()
 
 
-key_f = 0
 #rocket = Voxel("1.blend", [0,0,0],None)
 #rocket = Voxel(cube, [0,0,0],None)
 
-rocket = Voxel('assets/blend/player_test1.obj', [0,0,0],None)
-
-player = FirstPersonController(model='assets/blend/player_test1.obj', collider='mesh', scale = 1, color=color.rgba(0,0,0,.3), rotation = Vec3(0,0,0))
+rocket = Voxel('assets/blend/player_test1.blend', [0,0,0],None)
 
 window.exit_button.visible = False
 Sky(texture=sky_texture)
@@ -550,12 +552,16 @@ Sky(texture=sky_texture)
 
 #ARCHIVEMENTS
 FirstTime()
+TenMinutes()
    
 
 #BOTS
 AIPathFinder(player)
 
 
+# Game System
+SetOxygen()
+SetHealth()
 
 app.run()
 
