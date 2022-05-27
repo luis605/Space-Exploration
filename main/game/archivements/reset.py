@@ -4,6 +4,7 @@ from ursina import *
 class Reset:
     def __init__(self):
         file = open("temp.txt", "a+")
+        file.write("blabla is nothing.")
         file.close();
 
         def check_string():

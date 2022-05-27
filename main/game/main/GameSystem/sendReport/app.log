@@ -1,0 +1,3 @@
+root - DEBUG - Starting logging now
+
+root - ERROR - [('127.0.0.1', 44610)] name 'MemoryCounter' is not defined , Problem Noticed =  1

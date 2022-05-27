@@ -7,7 +7,7 @@ class AIPathFinder:
     def __init__(self, player):
         
         self.player = player
-        self.radius = 4500
+        self.radius = 30
         self.cam_x = 0
         self.persue = False
         #
@@ -31,14 +31,15 @@ class AIPathFinder:
 ##        self.target.setPos(self.player.position)
 
         
-        if self.player.getDistance(self.seeker) < self.radius:
-            self.seeker.lookAt(self.player)  
-            self.seeker.add_script(SmoothFollow(enabled = True, target=self.player, offset=[2, 1.5, 0], speed=.004))
+        if distance(self.player, self.seeker) < self.radius:
+            self.seeker.lookAt(self.player)
+            self.seeker.add_script(SmoothFollow(target=self.player, speed=.004, offset = (1,2,0)))
         else:
-            self.seeker.add_script(SmoothFollow(enabled = False, target=self.player, speed=0))
+            SmoothFollow(target=None, offset=(0,0,0), speed=0, rotation_speed=0, rotation_offset=(0,0,0))
 
 
         return task.cont
 
     def setAI(self):
+        self.seeker.add_script(SmoothFollow(enabled = True, target=self.player, offset=[2, 1.5, 0], speed=.004))
         taskMgr.add(self.update,"Follow")

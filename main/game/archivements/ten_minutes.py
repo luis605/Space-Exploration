@@ -11,7 +11,7 @@ class TenMinutes(Entity):
     def __init__(self):
 
         file = open("temp.txt", "a+")
-        #file.write("blabla is nothing.")
+        file.write("blabla is nothing.")
         file.close();
 
         def check_string():
@@ -37,13 +37,21 @@ class TenMinutes(Entity):
 
 
     def count_time(self, task):
-        if task.time < 2.0:
+##        if task.time < 12.0:
+        self.end_time = time.perf_counter()
+
+        self.is_done =  self.end_time - self.start_time
+
+##        print(self.is_done)
+
+        if self.is_done <= 600.0:
+                        
             return Task.cont
 
-        print('Done')
+        print('Ten Minutes')
         
         file = open("temp.txt", "a+")
-        file.write("ten minutes")
+        file.write("ten minutes\n")
 
         self.on()
         
@@ -72,7 +80,7 @@ class TenMinutes(Entity):
         self.archivement.texture.set_pixel(0, 2, color.blue)
         self.archivement.texture.apply()
 
-        self.archivement_txt =Text('<red>First Time', position=(0.60,0.4,0), color = color.red)
+        self.archivement_txt =Text('<red>Ten Minutes', position=(0.60,0.4,0), color = color.red)
         size = self.archivement_txt.size 
         self.archivement_txt.create_background(padding=size*2, radius=size, color=color.yellow)
 
