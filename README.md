@@ -13,9 +13,11 @@ Next install panda3d, ursina, perlin_noise and pickle with pypi:
 `pip install [package]`
 or
 `pip3 install [package]`
+or by running
+`pip3 install -r "requirements.txt`
 
 
-In **ursina/lights.py** I changed `DirectionalLight` to `Ursina_DirectionalLight` because of a conflict problem between panda3d.core and ursina.
+In **ursina/lights.py** I changed `DirectionalLight` to `Ursina_DirectionalLight` because of a conflict problem between panda3d.core and ursina, but thats already in this repo.
 
 Then `run` main.py!!!
 
