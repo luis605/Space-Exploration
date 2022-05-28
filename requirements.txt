@@ -1,4 +1,3 @@
 panda3d
 ursina
-pickle
 perlin_noise
