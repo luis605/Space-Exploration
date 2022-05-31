@@ -1,6 +1,7 @@
 # Space-Exploration
 A Sandbox Game powered by Python and Ursina Engine
 
+![Alt text](https://lusluistomascabetede.npkn.net/site-status-badge/)
 
 # History
 It all started back when I was 11 and I wanted to make a space game where I could explore and build as free as it could be. 2 years later, I started making the game prototype with Ursina Engine, when the Panda3d Engine version failed. I hope you like it. You can support my work by giving ideas and fixing bugs. The game will be free, but you need to check out the license.
