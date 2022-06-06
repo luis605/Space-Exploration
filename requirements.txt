@@ -1,3 +1,4 @@
 panda3d
 ursina
 perlin_noise
+numpy
