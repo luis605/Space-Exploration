@@ -460,8 +460,6 @@ try:
 
     window.exit_button.visible = False
 
-    EditorCamera()
-
 
 
     #ARCHIVEMENTS
