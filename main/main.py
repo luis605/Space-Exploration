@@ -1,11 +1,19 @@
+'''
+Copyright © 2022 <Luís Almeida>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+'''
+
 # ursina
 from ursina import *
 
 from ursina.prefabs.first_person_controller import FirstPersonController
 from ursina.prefabs.health_bar import *
-
-from game.graphics.shaders.lit_with_shadows_shader import *
-#from ursina.shaders.screenspace_shaders import camera_grayscale
+from ursina.shaders import camera_grayscale_shader
 
 from ursina.prefabs.button_list import *
 
@@ -25,6 +33,8 @@ from panda3d import *
 import pickle # added
 import os # added
 import threading
+import logging
+import numpy as np
 
 from random import randint,randrange
 from time import perf_counter
@@ -38,22 +48,33 @@ from game.gui.inventory import Inventory
 from game.archivements.firstTime import FirstTime
 from game.archivements.ten_minutes import TenMinutes
 
-from game.main.SpashScreen import SpashScreenInit
+from game.graphics.shaders.lit_with_shadows_shader import *
+from game.graphics.fog import MyFog
+
 from game.main.world.generator.world_generator import Generate_Terrain
 from game.main.world.lights.lights import Lights
+from game.main.world.skybox import Skybox
+
 from game.main.bots.bots import AIPathFinder
 
 from game.main.GameSystem.oxygen import SetOxygen
 from game.main.GameSystem.health import SetHealth
 from game.main.GameSystem.messageBox import MessageBox
 from game.main.GameSystem.reportError import ReportError
+from game.main.GameSystem.rocket import *
+from game.main.GameSystem.sound import Sound
+from game.main.GameSystem.inventory_bar import InventoryBar
+from game.main.GameSystem.physics import *
 
+from game.main.GameSystem.version import *
+
+from game.main.WindowConf import WindowConf
 
 
 
 try:
         
-    # Vars                                  
+    # Variables                                
     key_f = 0
     key_esc = 0
     key_walk = 0
@@ -61,48 +82,34 @@ try:
 
     distance_mouse_create = 0
 
+    cube = 'cube'
+    sphere = 'sphere'
 
-
-    # Game
+    # Start Game
     app = Ursina()
 
-
-    # Window configs
-    window.title = 'Space Exploration' # The window title
-    #window.borderless = False
-    window.color = color.dark_gray 
-    window.cog_button.enabled = False
-
-    window.exit_button.text = 'Exit'
-    window.exit_button.color = color.gray
+    print("game version: ", game_version)
 
 
-
-    def starting():
-        SpashScreenInit()
-        
-    #    level.bow.enabled = True
-
-
-
-    starting()
+    # Window Configurations
+    WindowConf()
+    
+    # Sky
+    Skybox()
 
     #Setting up player
-    player = FirstPersonController(model='assets/blend/player_test1.blend', collider='mesh', scale = 1, color=color.rgba(0,0,0,.3), rotation = Vec3(0,0,0))
+    player = FirstPersonController(model='assets/blend/player_test1.obj', collider='mesh', scale = 1, color=color.rgba(0,0,0,.3), rotation = Vec3(0,0,0), position=(0,3,0))
+
 
 
     # Fog
-    myFog = Fog("Far Away Fog")
-    myFog.setColor(100,100, 100)
-    myFog.setExpDensity(1)
-    render.setFog(myFog)
+    MyFog()
 
 
     # Shadows and shaders
     Entity.default_shader = lit_with_shadows_shader
 
     # Perlin Noise
-    #noise = PerlinNoise(octaves=3, seed=randint(1,1000000000))
     seed=randint(1,1000000000)
 
 
@@ -111,12 +118,13 @@ try:
 
 
 
-
+    # Filters
     filters = CommonFilters(base.win, base.cam)
+##    filters.setHighDynamicRange()
+##    filters.setInverted()
 
-
-
-    #removed load_texture
+    inventory = InventoryBar()
+    
     blocks = [
         0,
         load_texture("assets/grass.png"),
@@ -125,41 +133,22 @@ try:
         load_texture("assets/wood.png")
     ]
 
+    for i in range(len(blocks)):
+##        print(i)
+        print(blocks[i])
+        inventory.append(str(blocks[i]))
     block_id = 1
 
 
-    # Sky
-    sky_texture = load_texture("assets/skybox-4k.jpg")
+    #Sound
+    sound = Sound(player)
+
+    runningSd = sound.runningSd
+    music = sound.music
+    music_b= sound.music_b
 
 
-    cube = 'cube'
-    sphere = 'sphere'
 
-
-    # Load sounds
-    music = Audio('Art-Of-Silence_V2.mp3', pitch=1, loop=True, autoplay=True)
-    print(music.clip)
-    music.volume=0
-    music_b = Audio(music.clip)
-    music_b.volume = 0
-
-    from direct.showbase import Audio3DManager
-    audio3d = Audio3DManager.Audio3DManager(base.sfxManagerList[0], camera)
-
-    ###
-    jumpSd = base.loader.loadSfx('assets/audio/effects/jump.mp3')
-    menuSd = base.loader.loadSfx('assets/audio/effects/menu-pop.mp3')
-    runningSd = loader.loadSfx('assets/audio/walk/grass_walk.wav')
-
-    audio3d.attachSoundToObject(runningSd, player)
-
-    runningSd.setLoop(True)
-    runningSd.play()
-
-    runningSd.stop()
-
-    status = runningSd.status()
-    print("Status: " + str(status))
 
 
     # Lights
@@ -174,11 +163,14 @@ try:
     player_walk = FrameAnimation3d('assets/blend/player_walk.obj',fps=1)
 
 
+    oxygen = SetOxygen().oxygen
+
+
     def update():
 
     #    print(mouse.hovered_entity)
 
-        global key_walk, start_time
+        global key_walk, start_time, new_direction
 
 
 
@@ -203,11 +195,9 @@ try:
             runningSd.setTime(1)
             runningSd.stop()
 
-    ##    try:
-    ##        print(start_time - time.perf_count)
-    ##    except Exception as e:
-    ##        print(e)
+
         
+            
     def input(key):
         
             global block_id, hand, key_f, key_esc, key_walk, fly_key, distance_mouse_create
@@ -247,7 +237,7 @@ try:
                 a.fade_in(value=1, duration=.5, delay=0, curve=curve.in_expo, resolution=None, interrupt='finish',)
 
             if key == 'k':
-                Rocket()
+                Rocket(rocket)
                             
             if key == 'escape' and key_esc == 0:
                 key_esc = 1
@@ -395,89 +385,6 @@ try:
 
 
 
-    class Rocket(Entity):
-        def __init__(self, **kwargs):
-            super().__init__()
-            self.speed = 5
-            self.height = 2
-
-            self.gravity = 1
-            self.grounded = False
-            self.jump_height = 2
-            self.jump_up_duration = .5
-            self.fall_after = .35 # will interrupt jump up
-            self.jumping = False
-            self.air_time = 0
-
-            for key, value in kwargs.items():
-                setattr(self, key ,value)
-
-
-            # make sure we don't fall through the ground if we start inside it
-            if self.gravity:
-                ray = raycast(self.world_position+(0,self.height,0), self.down, ignore=(self,))
-                if ray.hit:
-                    self.y = ray.world_point.y
-                    
-            self.go_up()
-
-        def update(self):
-
-
-
-                # gravity
-                ray = raycast(self.world_position+(0,self.height,0), self.down, ignore=(self,))
-                # ray = boxcast(self.world_position+(0,2,0), self.down, ignore=(self,))
-
-                if ray.distance <= self.height+.1:
-                    if not self.grounded:
-                        self.land()
-                    self.grounded = True
-                    # make sure it's not a wall and that the point is not too far up
-                    if ray.world_normal.y > .7 and ray.world_point.y - self.world_y < .5: # walk up slope
-                        self.y = ray.world_point[1]
-                    return
-                else:
-                    self.grounded = False
-
-                # if not on ground and not on way up in jump, fall
-                self.y -= min(self.air_time, ray.distance-.05) * time.dt * 100
-                self.air_time += time.dt * .25 * self.gravity
-
-
-
-        def go_up(self):
-
-    ##        rocket.shake(duration=.2, magnitude=.001, speed=.01, direction=(1,1))
-
-
-            self.grounded = False
-            rocket.animate_y(rocket.y+self.jump_height, self.jump_up_duration, resolution=int(1//time.dt), curve=curve.out_expo)
-            invoke(self.start_fall, delay=self.fall_after)
-
-
-
-        def start_fall(self):
-            rocket.y_animator.pause()
-            self.jumping = False
-
-
-        def land(self):
-            # print('land')
-            self.air_time = 0
-            self.grounded = True
-
-
-
-
-
-
-
-
-
-
-            
-
 
 
 
@@ -549,10 +456,11 @@ try:
     #rocket = Voxel("1.blend", [0,0,0],None)
     #rocket = Voxel(cube, [0,0,0],None)
 
-    rocket = Voxel('assets/blend/player_test1.blend', [10,10,0],None)
+    rocket = Voxel('assets/blend/player_test1.obj', [10,10,0],None)
 
     window.exit_button.visible = False
-    Sky(texture=sky_texture)
+
+    EditorCamera()
 
 
 
@@ -571,6 +479,7 @@ try:
 
 except Exception as e:
     print(e)
+    logging.exception(e)
     ReportError(e)
 
 try:
