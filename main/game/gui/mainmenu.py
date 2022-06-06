@@ -1,3 +1,14 @@
+'''
+Copyright © 2022 <Luís Almeida>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+'''
+
+
 from ursina import *
 #from ursina.prefabs.memory_counter import *
 
@@ -9,7 +20,7 @@ from panda3d.core import *
 from panda3d import *
 
 from pandac.PandaModules import ClockObject
-from pandac.PandaModules import *
+##from pandac.PandaModules import *
 
 
 from direct.showbase.DirectObject import DirectObject
@@ -24,13 +35,16 @@ from direct.gui.OnscreenText import OnscreenText
 Text.default_resolution = 1080 * Text.size
 
 
-
 # some_file.py
 import sys
 # insert at 1, 0 is the script path (or '' in REPL)
 
-from game.archivements.reset import Reset
-
+try:
+    from game.archivements.reset import Reset
+    from game.main.world.lights.lights import Lights
+    from game.main.GameSystem.inventory_bar import InventoryBar
+except:
+    print("Cannot load Game files - mainmenu.py")
 
 
 class MainMenu(Entity):
@@ -38,6 +52,10 @@ class MainMenu(Entity):
         super().__init__(
             parent = camera.ui
         )
+
+        self.direc_light = Lights().direc_light
+        self.pivot = Lights().pivot
+        self.amb_light = Lights().amb_light
 
 
 
@@ -59,18 +77,27 @@ class MainMenu(Entity):
         self.main_menu = Entity(parent = self.main, enabled = True)
         self.settings = Entity(parent = self.main, enabled = False)
 
-        self.graph_settings = Entity(parent = self.settings, enabled = False)
+        self.graph_settings = Entity(enabled = False)
         self.audio_settings = Entity(parent = self.settings, enabled = False)
 
         self.player = player
         window.exit_button.visible = True
 
+        self.inventoryBar = InventoryBar()
+        self.inventoryBar.enabled = False
 
         self.player.disable()
+
+        # Frames
+
+        self.Frame_audio = DirectFrame(parent = self.audio_settings, frameColor=(0, 0, 0, 0.5),
+                                       frameSize=(-1, 1, -1, 1),
+                                       pos=(0, 0, 0))
             
 
+        self.Frame_audio.hide()
 
-
+        
 
         if esc_status == 0:
 ##            Frame_audio.show()
@@ -95,6 +122,8 @@ class MainMenu(Entity):
             self.player.enable()
             mouse.locked = True
             self.main_menu.disable()
+            self.Back_button.disable()
+            self.inventoryBar.enabled = True
 
 
         def reset():
@@ -106,12 +135,81 @@ class MainMenu(Entity):
             Reset()
             self.player.position = (0,0,2)
 
-        def graphics():
-            self.settings.disable()
 
-            Frame = DirectFrame(frameColor=(0, 0, 0, 0.5),
-                                     frameSize=(-1, 1, -1, 1),
-                                     pos=(0, 0, 0))
+
+        def back():
+            #self.player.enable()
+            #mouse.locked = True
+            self.main_menu.enable()
+            self.settings.disable()
+            self.graph_settings.disable()
+            self.audio_settings.disable()
+            self.Audio_back_button.visible = False
+            
+            self.Frame_audio.hide()
+            self.graphics()
+            self.entry.hide()
+
+            self.Frame.hide()
+
+            
+        #Graphics
+        graphics_button = Button(text = "G r a p h i c s", color = color.gray, scale_y = 0.1, scale_x = 0.3, y = 0.02, parent = self.settings)
+        graphics_button.on_click = Func(self.graphics)
+
+
+        #Audio
+        audio_button = Button(text = "A u d i o", color = color.gray, scale_y = 0.1, scale_x = 0.3, y = -0.1, parent = self.settings)
+        audio_button.on_click = Func(self.audio)
+
+        
+        continue_button = Button(text = "C o n t i n u e", color = color.gray, scale_y = 0.1, scale_x = 0.3, y = 0.02, parent = self.main_menu)
+        settings_button = Button(text = "S e t t i n g s", color = color.gray, scale_y = 0.1, scale_x = 0.3, y = -0.1, parent = self.main_menu)
+        reset_button = Button(text = "R e s e t", color = color.red, scale_y = 0.1, scale_x = 0.3, position = Vec3(x = 0, y = -0.22, z = 1), parent = self.main_menu)
+        quit_button = Button(text = "Q u i t", color = color.gray, scale_y = 0.1, scale_x = 0.3, position = Vec3(x = 0, y = -0.3, z = -3), parent = self.main_menu)
+        quit_button.on_click = application.quit
+        settings_button.on_click = Func(settings)
+        continue_button.on_click = Func(conti)
+        reset_button.on_click = Func(reset)
+
+
+        # Back
+        self.Back_button = Button(text = "Back", color = color.rgb(58, 58, 96), scale_y = 0.1, scale_x = 0.5, y = 0.2, parent = self.settings)
+        self.Back_button.on_click = Func(back)
+
+        # Audio Back
+        self.Audio_back_button = Button(text = "<<", color = color.rgb(158, 158, 196), scale_y = 0.1, scale_x = 0.2, y = 0.2, x = -0.25, parent = self.main, visible = False)
+        self.Audio_back_button.on_click = Func(back)
+
+##        # Graphics Back
+##        self.Graph_back_button = Button(text = "<<", color = color.rgb(158, 158, 196), scale_y = 0.1, scale_x = 0.2, y = 0.2, x = -0.25, parent = self.main, visible = False)
+##        self.Graph_back_button.on_click = Func(back)
+
+
+
+    def setResolution( self, w, h ):
+        wp = WindowProperties()
+        wp.setSize( w, h )
+        wp.setFullscreen( True )
+        import os
+        if os.name == 'posix':
+          base.openMainWindow()
+          base.graphicsEngine.openWindows()
+        base.win.requestProperties( wp )
+
+
+
+    def graphics(self):
+            self.settings.disable()
+            self.graph_settings.enable()
+
+
+            self.Frame = DirectFrame(frameColor=(0, 0, 0, 0.5),
+                                    frameSize=(-1, 1, -1, 1),
+                                    pos=(0, 0, 0))
+                        
+
+
             
             v = [0]
             vs = [0]
@@ -123,7 +221,7 @@ class MainMenu(Entity):
 
 
             Title = OnscreenText(text = "[ Graphics ]",
-                    parent = Frame,
+                    parent = self.Frame,
                     bg=(0,0,0,0),
                     fg=(255,255,255,1),
                     scale = 0.1,
@@ -131,7 +229,7 @@ class MainMenu(Entity):
                     font = self.font)
 
             Fps_Limit = OnscreenText(text = "[ FPS Limit ]",
-                    parent = Frame,
+                    parent = self.Frame,
                     bg=(0,0,0,0),
                     fg=(200,200,200,1),
                     scale = 0.05,
@@ -139,7 +237,7 @@ class MainMenu(Entity):
                     font = self.font)
 
             Fps_Limit = OnscreenText(text = "[ Resolution ]",
-                    parent = Frame,
+                    parent = self.Frame,
                     bg=(0,0,0,0),
                     fg=(200,200,200,1),
                     scale = 0.05,
@@ -149,7 +247,7 @@ class MainMenu(Entity):
 
             #clear the text
             def clearText():
-                entry.enterText('')
+                self.entry.enterText('')
 
 
 
@@ -165,7 +263,7 @@ class MainMenu(Entity):
                 
 
             #add text entry
-            entry = DirectEntry(text = "",
+            self.entry = DirectEntry(text = "",
                                 command=setText,
                                 scale=.05,
                                 width=3,
@@ -181,14 +279,14 @@ class MainMenu(Entity):
                 #print (v)
                 if v == [0]:
                     print("Fps Limit - ENABLED")
-                    entry.show()
+                    self.entry.show()
                 else:
                     print("Fps Limit - DISABLED")
-                    entry.hide()   
+                    self.entry.hide()   
 
             # Add button
             buttons = [
-                DirectRadioButton(parent = Frame,
+                DirectRadioButton(parent = self.Frame,
                                   text='Enabled',
                                   variable=v,
                                   value=[0],
@@ -197,7 +295,7 @@ class MainMenu(Entity):
                                   #boxGeom="image.jpg",
                                   command=setFpsONOFF),
                 
-                DirectRadioButton(parent = Frame,
+                DirectRadioButton(parent = self.Frame,
                                   text='Disabled',
                                   variable=v,
                                   value=[1],
@@ -216,7 +314,7 @@ class MainMenu(Entity):
 
 
             Shadows_Quality = OnscreenText(text = "[ Shadows Quality ]",
-                    parent = Frame,
+                    parent = self.Frame,
                     bg=(0,0,0,0),
                     fg=(200,200,200,1),
                     scale = 0.05,
@@ -230,28 +328,28 @@ class MainMenu(Entity):
                 #print (v)
                 if vs == [0]:
                     print("Shadows Quality - HIGH")
-                    pivot.shadows = True
+                    self.pivot.shadows = True
                     Entity.shadows = True
-                    direc_light.shadows = True
-                    amb_light.shadows = True
+                    self.direc_light.shadows = True
+                    self.amb_light.shadows = True
                     
                 elif vs == [1]:
                     print("Shadows Quality - Medium")
-                    pivot.shadows = True
+                    self.pivot.shadows = True
                     Entity.shadows = False
-                    direc_light.shadows = True
-                    amb_light.shadows = False
+                    self.direc_light.shadows = True
+                    self.amb_light.shadows = False
 
                 elif vs == [2]:
                     print("Shadows Quality - NONE")
-                    pivot.shadows = False
+                    self.pivot.shadows = False
                     Entity.shadows = False
-                    direc_light.shadows = False
-                    amb_light.shadows = False
+                    self.direc_light.shadows = False
+                    self.amb_light.shadows = False
 
             # Add button
             ShadowState = [
-                DirectRadioButton(parent = Frame,
+                DirectRadioButton(parent = self.Frame,
                                   text='  High  ',
                                   variable=vs,
                                   value=[0],
@@ -260,7 +358,7 @@ class MainMenu(Entity):
                                   #boxGeom="image.jpg",
                                   command=setShadows),
                 
-                DirectRadioButton(parent = Frame,
+                DirectRadioButton(parent = self.Frame,
                                   text='Medium',
                                   variable=vs,
                                   value=[1],
@@ -268,7 +366,7 @@ class MainMenu(Entity):
                                   pos=(0, -0.3, 0),
                                   command=setShadows),
 
-                DirectRadioButton(parent = Frame,
+                DirectRadioButton(parent = self.Frame,
                                   text='  None  ',
                                   variable=vs,
                                   value=[2],
@@ -288,7 +386,7 @@ class MainMenu(Entity):
 
 
             Shadows_Quality = OnscreenText(text = "[ Shadows Quality ]",
-                    parent = Frame,
+                    parent = self.Frame,
                     bg=(0,0,0,0),
                     fg=(200,200,200,1),
                     scale = 0.05,
@@ -309,12 +407,14 @@ class MainMenu(Entity):
                     
                 if vs == [0]:
                     print("Resolution - 1920, 1080")
-                    window.size = window.fullscreen_size * .5
-##                    self.setResolution, extraArgs = [ 1920, 1080 ]
 
+                    w, h = 1024, 768 
 
-                    window.windowed_size = 0.3
-                    window.update_aspect_ratio()
+                    props = WindowProperties() 
+                    props.setSize(w, h) 
+
+                    base.win.requestProperties(props) 
+
                     
                 elif vs == [1]:
                     print("Resolution - 800, 600")
@@ -323,12 +423,21 @@ class MainMenu(Entity):
 
                 elif vs == [2]:
                     print("Resolution - 400, 300")
+                    w, h = 400, 300 
+
+                    props = WindowProperties() 
+                    props.setSize(w, h) 
+
+                    wp = WindowProperties()
+                    
+                    base.win.requestProperties(props)
+                    wp.setFullscreen( True )
 
 
 
             # Add button
             ResoBTN = [
-                DirectRadioButton(parent = Frame,
+                DirectRadioButton(parent = self.Frame,
                                   text='  High  ',
                                   variable=vs,
                                   value=[0],
@@ -337,7 +446,7 @@ class MainMenu(Entity):
                                   #boxGeom="image.jpg",
                                   command=changeResolution),
                 
-                DirectRadioButton(parent = Frame,
+                DirectRadioButton(parent = self.Frame,
                                   text='Medium',
                                   variable=vs,
                                   value=[1],
@@ -345,7 +454,7 @@ class MainMenu(Entity):
                                   pos=(0, -0.8, 0),
                                   command=changeResolution),
 
-                DirectRadioButton(parent = Frame,
+                DirectRadioButton(parent = self.Frame,
                                   text='  Low  ',
                                   variable=vs,
                                   value=[2],
@@ -359,8 +468,25 @@ class MainMenu(Entity):
                 button.setOthers(ResoBTN)
 
 
-        def audio():
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    def audio(self):
             self.settings.disable()
+            self.Audio_back_button.show()
+            self.Frame_audio.show()
 
             
 
@@ -368,9 +494,7 @@ class MainMenu(Entity):
 
 
 
-            Frame_audio = DirectFrame(frameColor=(0, 0, 0, 0.5),
-                                           frameSize=(-1, 1, -1, 1),
-                                           pos=(0, 0, 0))
+
 
 
 
@@ -378,7 +502,7 @@ class MainMenu(Entity):
 
 
             Title_audio = OnscreenText(text = "[ Audio ]",
-                    parent = Frame_audio,
+                    parent = self.Frame_audio,
                     bg=(0,0,0,0),
                     fg=(255,255,255,1),
                     scale = 0.1,
@@ -419,39 +543,25 @@ class MainMenu(Entity):
 
 
 
-            
-        #Graphics
-        graphics_button = Button(text = "G r a p h i c s", color = color.gray, scale_y = 0.1, scale_x = 0.3, y = 0.02, parent = self.settings)
-        graphics_button.on_click = Func(graphics)
 
 
-        #Audio
-        audio_button = Button(text = "A u d i o", color = color.gray, scale_y = 0.1, scale_x = 0.3, y = -0.1, parent = self.settings)
-        audio_button.on_click = Func(audio)
+if __name__ == "__main__":
+    app = Ursina()
 
+    player = EditorCamera()
+    pivot = Lights().pivot
+    direc_light = Lights().direc_light
+    amb_light = Lights().amb_light
+
+    music = Audio('Art-Of-Silence_V2.mp3', pitch=1, loop=True, autoplay=True)
+    print(music.clip)
+    music.volume=0
+    music_b = Audio(music.clip)
+    music_b.volume = 0
         
-        continue_button = Button(text = "C o n t i n u e", color = color.gray, scale_y = 0.1, scale_x = 0.3, y = 0.02, parent = self.main_menu)
-        settings_button = Button(text = "S e t t i n g s", color = color.gray, scale_y = 0.1, scale_x = 0.3, y = -0.1, parent = self.main_menu)
-        reset_button = Button(text = "R e s e t", color = color.red, scale_y = 0.1, scale_x = 0.3, y = -0.22, parent = self.main_menu)
-        quit_button = Button(text = "Q u i t", color = color.gray, scale_y = 0.1, scale_x = 0.3, y = -0.34, parent = self.main_menu)
-        quit_button.on_click = application.quit
-        settings_button.on_click = Func(settings)
-        continue_button.on_click = Func(conti)
-        reset_button.on_click = Func(reset)
+    esc_status = 0
+    
+    MainMenu(player, pivot, direc_light, amb_light, music, esc_status)
 
 
-
-
-    def setResolution( self, w, h ):
-        wp = WindowProperties()
-        wp.setSize( w, h )
-        wp.setFullscreen( True )
-        import os
-        if os.name == 'posix':
-          base.openMainWindow()
-          base.graphicsEngine.openWindows()
-        base.win.requestProperties( wp )
-
-
-                    
-
+    app.run()

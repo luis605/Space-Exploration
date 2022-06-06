@@ -10,9 +10,47 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 
 from ursina import *
 
+from math import pi
 
 
-class SpashScreenInit:
-    def __init__(self):
-        spash_screen_image = Entity(parent=camera.ui, model='quad', texture='assets/images/loading_screen/main_image.png', scale_x=1.777)
-        spash_screen_image.fade_out(delay=1.5, duration=1, curve=curve.linear)
+# Units
+Km=1000.0
+m=Km/1000
+AU=149597870700
+
+StarRadius = 695508*Km
+
+spaceGravity = 0
+planetGravity = 9.1
+
+pi = pi
+
+
+
+# Convert Time
+def hourToMinutes(hour):
+    minutes = 60*hour
+    return minutes
+
+def hourToSeconds(hour):
+    seconds = 3600*hour
+    return seconds
+
+
+def secondsToMinutes(seconds):
+    minutes = seconds/60
+    return minutes
+
+def secondsToHours(seconds):
+    hours = seconds/3600
+    return hours
+
+
+def minutesToSeconds(minutes):
+    seconds = minutes*60
+    return seconds
+
+def minutesToHours(minutes):
+    hours = minutes/60
+    return hours
+

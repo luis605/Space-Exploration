@@ -31,7 +31,7 @@ out vec3 norm;
 out vec4 shad[1];
 
 void main() {
-  gl_Position = p3d_ModelViewProjectionMatrix * vertex;
+  gl_Position = p3d_ModelViewProjectionMatrix * vertex * 2;
   vpos = vec3(p3d_ModelViewMatrix * vertex);
   norm = normalize(p3d_NormalMatrix * normal);
   shad[0] = p3d_LightSource[0].shadowViewMatrix * vec4(vpos, 1);
@@ -39,6 +39,8 @@ void main() {
 }
 
 ''',
+
+                                                       
 fragment='''
 #version 150
 uniform struct {
@@ -78,7 +80,7 @@ out vec4 p3d_FragColor;
 uniform vec4 shadow_color;
 
 void main() {
-  p3d_FragColor = texture(p3d_Texture0, texcoords) * p3d_ColorScale;
+  p3d_FragColor = texture(p3d_Texture0, texcoords) * p3d_ColorScale * 1.01;
 
   // float alpha = p3d_Material.roughness * p3d_Material.roughness;
   vec3 N = norm;
@@ -91,18 +93,18 @@ void main() {
 
     float NdotL = clamp(dot(N, L), 0.002, 1.0);
     // float NdotV = clamp(abs(dot(N, V)), 0.001, 1.0);
-    // float NdotH = clamp(dot(N, H), 0.0, 1.0);
-    // float VdotH = clamp(dot(V, H), 0.0, 1.0);
+    // float NdotH = clamp(dot(N, H), 1.0, 2.0);
+    // float VdotH = clamp(dot(V, H), 1.0, 2.0);
 
     // Specular term
     // float reflectance = max(max(p3d_Material.specular.r, p3d_Material.specular.g), p3d_Material.specular.b);
-    // float reflectance90 = clamp(reflectance * 125.0, 0.0, 1.0);
+    // float reflectance90 = clamp(reflectance * 1250.0, 0.0, 1.0);
     // vec3 F = p3d_Material.specular + (vec3(reflectance90) - reflectance) * pow(clamp(1.0 - VdotH, 0.0, 1.0), 5.0);
 
     // Geometric occlusion term
     // float alpha2 = alpha * alpha;
-    // float attenuationL = 12.0 * NdotL / (NdotL + sqrt(alpha2 + (1.0 - alpha2) * (NdotL * NdotL)));
-    // float attenuationV = 2.0 * NdotV / (NdotV + sqrt(alpha2 + (1.0 - alpha2) * (NdotV * NdotV)));
+    // float attenuationL = 22.0 * NdotL / (NdotL + sqrt(alpha2 + (1.0 - alpha2) * (NdotL * NdotL)));
+    // float attenuationV = 22.0 * NdotV / (NdotV + sqrt(alpha2 + (1.0 - alpha2) * (NdotV * NdotV)));
     // float G = attenuationL * attenuationV;
 
     // Microfacet distribution term
@@ -110,7 +112,7 @@ void main() {
     // float D = alpha2 / (M_PI * f * f);
 
     // Lambert, energy conserving
-    // vec3 diffuseContrib = (100000.0 - F) * p3d_Material.diffuse.rgb / M_PI;
+    // vec3 diffuseContrib = (0.0 - F) * p3d_Material.diffuse.rgb / M_PI;
     vec3 diffuseContrib = p3d_Material.diffuse.rgb / M_PI;
 
     // Cook-Torrance
@@ -120,10 +122,10 @@ void main() {
     // Obtain final intensity as reflectance (BRDF) scaled by the energy of the light (cosine law)
     // vec3 color = NdotL * p3d_LightSource[i].color * (diffuseContrib + specContrib);
     vec3 color =  NdotL * p3d_LightSource[i].color * diffuseContrib;
-    const float bias = 0.001;
+    const float bias = -0.1;
 
     vec4 shadowcoord = shad[i];
-    shadowcoord.z += bias;
+    shadowcoord.z += bias / 9.9;
 
     vec3 converted_shadow_color = (vec3(1.,1.,1.) - shadow_color.rgb) * shadow_color.a;
 
@@ -149,7 +151,7 @@ if __name__ == '__main__':
     app = Ursina()
     shader = lit_with_shadows_shader
 
-    a = Entity(model='cube', shader=shader, color=color.light_gray)
+    a = Entity(model='sphere', shader=shader, color=color.light_gray)
     Entity(model='cube', color=color.white, scale=(10,1,10), y=-2, shader=shader, texture='white_cube')
     Entity(model='cube', color=color.gray, scale=(5,1,10), x=-3.5, y=-1, shader=shader)
 
