@@ -9,7 +9,7 @@ It all started back when I was 11 and I wanted to make a space game where I coul
 # Build and Run
 First of all you will need to have python installed as pypi on your machine www.python.org/download .
 
-Next install panda3d, ursina, perlin_noise and pickle with pypi:
+Next install panda3d, ursina and perlin_noise with pypi:
 
 `pip install [package]`
 or
@@ -21,6 +21,9 @@ or by running
 In **ursina/lights.py** I changed `DirectionalLight` to `Ursina_DirectionalLight` because of a conflict problem between panda3d.core and ursina, but thats already in this repo.
 
 Then `run` main.py!!!
+
+# Info
+Every month I will update the game.
 
 # Powered By
 
