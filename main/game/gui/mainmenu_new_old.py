@@ -94,89 +94,91 @@ class MainMenu(Entity):
 
         self.Frame_audio.hide()
 
-        
+        self.root()
 
         if esc_status == 0:
-##            Frame_audio.show()
-##            graphics.Frame.show()
             self.player.disable()
+            self.root()
         elif esc_status == 1:
             self.player.enable()
-##            Frame_audio.hide()
-##            Frame.hide()
+
             
         
-#        application.paused = True
-
-        def settings():
-            #self.player.enable()
-            #mouse.locked = True
-            self.main_menu.disable()
-            self.settings.enable()
-
-        def conti():
-            application.paused = False
-            self.player.enable()
-            mouse.locked = True
-            self.main_menu.disable()
-            self.Back_button.disable()
-            self.inventoryBar.enabled = True
-
-
-        def reset():
-            application.paused = False
-            self.player.enable()
-            mouse.locked = True
-            self.main_menu.disable()
-
-            Reset()
-            self.player.position = (0,0,2)
-
-
-
-        def back():
-            #self.player.enable()
-            #mouse.locked = True
-            self.main_menu.enable()
-            self.settings.disable()
-            self.graph_settings.disable()
-            self.audio_settings.disable()
-            self.Audio_back_button.visible = False
-            
-            self.Frame_audio.hide()
-            self.graphics()
-            self.entry.hide()
-
-            self.Frame.hide()
-
-            
+    def root(self):
         #Graphics
-        graphics_button = Button(text = "G r a p h i c s", color = color.gray, scale_y = 0.1, scale_x = 0.3, y = 0.02, parent = self.settings)
-        graphics_button.on_click = Func(self.graphics)
+        self.graphics_button = Button(text = "G r a p h i c s", color = color.gray, scale_y = 0.1, scale_x = 0.3, y = 0.02, parent = self.settings)
+        self.graphics_button.on_click = Func(self.graphics)
 
 
         #Audio
-        audio_button = Button(text = "A u d i o", color = color.gray, scale_y = 0.1, scale_x = 0.3, y = -0.1, parent = self.settings)
-        audio_button.on_click = Func(self.audio)
+        self.audio_button = Button(text = "A u d i o", color = color.gray, scale_y = 0.1, scale_x = 0.3, y = -0.1, parent = self.settings)
+        self.audio_button.on_click = Func(self.audio)
 
-        
-        continue_button = Button(text = "C o n t i n u e", color = color.gray, scale_y = 0.1, scale_x = 0.3, y = 0.02, parent = self.main_menu)
-        settings_button = Button(text = "S e t t i n g s", color = color.gray, scale_y = 0.1, scale_x = 0.3, y = -0.1, parent = self.main_menu)
-        reset_button = Button(text = "R e s e t", color = color.red, scale_y = 0.1, scale_x = 0.3, position = Vec3(x = 0, y = -0.22, z = 1), parent = self.main_menu)
-        quit_button = Button(text = "Q u i t", color = color.gray, scale_y = 0.1, scale_x = 0.3, position = Vec3(x = 0, y = -0.3, z = -3), parent = self.main_menu)
-        quit_button.on_click = application.quit
-        settings_button.on_click = Func(settings)
-        continue_button.on_click = Func(conti)
-        reset_button.on_click = Func(reset)
+        ###
+        self.continue_button = Button(text = "C o n t i n u e", color = color.gray, scale_y = 0.1, scale_x = 0.3, y = 0.02, parent = self.main_menu)
+        self.settings_button = Button(text = "S e t t i n g s", color = color.gray, scale_y = 0.1, scale_x = 0.3, y = -0.1, parent = self.main_menu)
+
+        self.reset_button = Button(text = "R e s e t", color = color.red, scale_y = 0.1, scale_x = 0.3, position = Vec3(x = 0, y = -0.22, z = 1), parent = self.main_menu)
+
+        self.quit_button = Button(text = "Q u i t", color = color.gray, scale_y = 0.1, scale_x = 0.3, position = Vec3(x = 0, y = -0.3, z = -3), parent = self.main_menu)
+        self.quit_button.on_click = application.quit
+
+        self.settings_button.on_click = Func(self.settings)
+
+        self.continue_button.on_click = Func(self.conti)
+
+        self.reset_button.on_click = Func(self.reset)
 
 
         # Back
         self.Back_button = Button(text = "Back", color = color.rgb(58, 58, 96), scale_y = 0.1, scale_x = 0.5, y = 0.2, parent = self.settings)
-        self.Back_button.on_click = Func(back)
+        self.Back_button.on_click = Func(self.back)
 
         # Audio Back
         self.Audio_back_button = Button(text = "<<", color = color.rgb(158, 158, 196), scale_y = 0.1, scale_x = 0.2, y = 0.2, x = -0.25, parent = self.main, visible = False)
-        self.Audio_back_button.on_click = Func(back)
+        self.Audio_back_button.on_click = Func(self.back)
+        
+
+    def settings(self):
+
+        self.main_menu.disable()
+        self.settings.enable()
+
+    def conti(self):
+        application.paused = False
+        self.player.enable()
+        mouse.locked = True
+        self.main_menu.disable()
+        self.Back_button.disable()
+        self.inventoryBar.enabled = True
+
+
+    def reset(self):
+        application.paused = False
+        self.player.enable()
+        mouse.locked = True
+        self.main_menu.disable()
+
+        Reset()
+        self.player.position = (0,0,2)
+
+
+
+    def back(self):
+        self.main_menu.enable()
+        self.settings.disable()
+        self.graph_settings.disable()
+        self.audio_settings.disable()
+        self.Audio_back_button.visible = False
+        
+        self.Frame_audio.hide()
+        self.graphics()
+        self.entry.hide()
+
+        self.Frame.hide()
+
+        
+
 
 ##        # Graphics Back
 ##        self.Graph_back_button = Button(text = "<<", color = color.rgb(158, 158, 196), scale_y = 0.1, scale_x = 0.2, y = 0.2, x = -0.25, parent = self.main, visible = False)

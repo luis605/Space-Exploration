@@ -70,8 +70,13 @@ class MainMenu(Entity):
 
 
         self.main = Entity(parent = self, enabled = True)
+        self.main.disable()
+        self.main.fade_in(value=1, duration=.5)
 
         self.main_menu = Entity(parent = self.main, enabled = True)
+        self.main_menu.disable()
+        self.main_menu.fade_in(value=1, duration=.5)
+
         self.settings = Entity(parent = self.main, enabled = False)
 
         self.graph_settings = Entity(enabled = False)

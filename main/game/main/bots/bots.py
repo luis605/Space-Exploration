@@ -43,10 +43,11 @@ class AIPathFinder:
         self.seeker.add_script(SmoothFollow(target=self.player, speed=.004, offset = (1,2,0)))
         
         if distance(self.player, self.seeker) < self.radius:
-            #self.seeker.lookAt(self.player)
-            pass
+            self.seeker.lookAt(self.player)
+            self.seeker.smooth_follow.speed=.004
         else:
-            pass
+            #print(self.seeker.scripts)
+            self.seeker.smooth_follow.speed=0
         
         return task.cont
 

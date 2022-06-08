@@ -103,6 +103,8 @@ class ReportError():
 
             SendReport(self.message_to_send)
 
+        
+
             
             
         # Send Button
@@ -127,7 +129,7 @@ class ReportError():
 
 
          
-        C1 = Checkbutton(report_window, text = "I noticed the problem", height=5, width = 20, variable=self.pn, onvalue=1, offvalue=0, command=problem_noticed).place(x=150, y=120)
+        C1 = Checkbutton(report_window, text = "I noticed the problem", height=5, width = 20, state=NORMAL, variable=self.pn, onvalue=1, offvalue=0, command=problem_noticed).place(x=150, y=120)
 
 
         legal_info = Label(report_window, text="Do you understand that some informations\nof the device and the error will be sent to us?")
@@ -135,15 +137,23 @@ class ReportError():
 
 
 
-        Checkbutton(report_window, text="I understand and I accept it", height=5, width = 20, variable=self.cb, onvalue=1, offvalue=0, command=send_update).place(x=150, y=240)
+        Checkbutton(report_window, text="I understand and I accept it", height=5, width = 20, state=NORMAL, variable=self.cb, onvalue=1, offvalue=0, command=send_update).place(x=150, y=240)
 
 
 
 
         #C2.place(x=150, y=240)
 
+        # Chat Button
+        def Chat():
+            SupportChat()
+            
+        send = Button(report_window, text="Chat", bg="blue", fg="orange", command=Chat)
+        send.place(x=100, y=350)
 
         report_window.mainloop()
 
+class SupportChat():
+    pass
 if __name__ == "__main__":
     ReportError("oi")

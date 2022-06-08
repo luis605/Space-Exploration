@@ -28,13 +28,21 @@ from pandac.PandaModules import *
 from direct.gui.DirectGui import *
 
 from panda3d import *
+from panda3d.core import Vec3
+from panda3d.bullet import BulletWorld
+from panda3d.bullet import BulletWorld
+from panda3d.bullet import BulletPlaneShape
+from panda3d.bullet import BulletRigidBodyNode
+from panda3d.bullet import BulletBoxShape
+
 
 # random, os, pickle, etc
 import pickle # added
 import os # added
-import threading
+from threading import *
 import logging
 import numpy as np
+import sys
 
 from random import randint,randrange
 from time import perf_counter
@@ -65,12 +73,13 @@ from game.main.GameSystem.rocket import *
 from game.main.GameSystem.sound import Sound
 from game.main.GameSystem.inventory_bar import InventoryBar
 from game.main.GameSystem.physics import *
-
 from game.main.GameSystem.version import *
 
 from game.main.WindowConf import WindowConf
+from game.main.StartUp import StartUp
 
-
+thread1 = StartUp(1)
+thread1.start()
 
 try:
         
@@ -88,6 +97,8 @@ try:
     # Start Game
     app = Ursina()
 
+    thread1.close()# thread1.root.destroy()
+    
     print("game version: ", game_version)
 
 
@@ -104,7 +115,6 @@ try:
 
     # Fog
     MyFog()
-
 
     # Shadows and shaders
     Entity.default_shader = lit_with_shadows_shader
@@ -162,10 +172,14 @@ try:
     # Animations
     player_walk = FrameAnimation3d('assets/blend/player_walk.obj',fps=1)
 
+    rocket_entity = []
 
     oxygen = SetOxygen().oxygen
 
 
+
+
+    
     def update():
 
     #    print(mouse.hovered_entity)
@@ -357,8 +371,18 @@ try:
 
                         voxel = Voxel(model, position=self.position + mouse.normal, texture = blocks[block_id])
                         pos = self.position + mouse.normal
+
+                        # If block attach to other block, then save it on rocket_entity (Colliding)
                         game_data.append([model, (pos.x,pos.y,pos.z),blocks[block_id]])
 
+                        origin = self.world_position + (self.up*.5) # the ray should start slightly up from the ground so we can walk up slopes or walk over small objects.
+                        hit_info = raycast(origin , self.position, ignore=(self,), distance=.5, debug=False)
+
+                        if not hit_info.hit:
+                            print("Ok")#if [model, (pos.x,pos.y,pos.z)]
+                        else:
+                            print("hoho")
+                            rocket_entity.append([model, (pos.x,pos.y,pos.z),blocks[block_id]])
                 if key == 'right mouse down':
                     destroy(self)
 
@@ -460,6 +484,8 @@ try:
 
     window.exit_button.visible = False
 
+##    EditorCamera()
+
 
 
     #ARCHIVEMENTS
@@ -478,6 +504,10 @@ try:
 except Exception as e:
     print(e)
     logging.exception(e)
+    try:
+        player.enabled = False
+    except:
+        pass
     ReportError(e)
 
 try:

@@ -12,6 +12,7 @@ from ursina import *
 from ursina.window import instance as window
 from panda3d.core import GraphicsWindow
 
+import os
 
 class ExitButton(Button):
     def __init__(self, **kwargs):
@@ -36,9 +37,11 @@ class ExitButton(Button):
 
         print("Finishing Application")
         base.destroy()
-#        application.quit()
+        application.quit()
+        os._exit(0)
 
 
+        
     def input(self, key):
         if held_keys['shift'] and key == 'q' and not mouse.right:
             self.on_click()
@@ -52,4 +55,6 @@ if __name__ == '__main__':
     To disable it, set window.exit_button.enabled to False
     '''
     app = Ursina()
+    window.exit_button.enabled = False
+    ExitButton()
     app.run()
