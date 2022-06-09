@@ -277,11 +277,13 @@ try:
             
 
 
-            if key == 'v':
-                a.fade_out(duration=4, curve=curve.linear)
+##
+##            if key == 'v':
+##                a.fade_out(duration=4, curve=curve.linear)
+##
+##            if key == 'b':
+##                a.fade_in(value=1, duration=.5, delay=0, curve=curve.in_expo, resolution=None, interrupt='finish',)
 
-            if key == 'b':
-                a.fade_in(value=1, duration=.5, delay=0, curve=curve.in_expo, resolution=None, interrupt='finish',)
 
             if key == 'k':
                 Rocket(rocket)
