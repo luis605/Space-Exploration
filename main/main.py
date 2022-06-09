@@ -88,6 +88,7 @@ try:
     key_esc = 0
     key_walk = 0
     fly_key = 0
+    game_data = []
 
     distance_mouse_create = 0
 
@@ -109,7 +110,12 @@ try:
     Skybox()
 
     #Setting up player
-    player = FirstPersonController(model='assets/blend/player_test1.obj', collider='mesh', scale = 1, color=color.rgba(0,0,0,.3), rotation = Vec3(0,0,0), position=(0,3,0))
+    player = FirstPersonController(model='assets/blend/player_test1.obj',
+                                   collider='mesh',
+                                   scale = 1,
+                                   color=color.rgba(0,0,0,.3),
+                                   rotation = Vec3(0,0,0),
+                                   position=(2,3,2))
 
 
 
@@ -133,6 +139,7 @@ try:
 ##    filters.setHighDynamicRange()
 ##    filters.setInverted()
 
+    # Inventory
     inventory = InventoryBar()
     
     blocks = [
@@ -144,7 +151,6 @@ try:
     ]
 
     for i in range(len(blocks)):
-##        print(i)
         print(blocks[i])
         inventory.append(str(blocks[i]))
     block_id = 1
@@ -158,9 +164,6 @@ try:
     music_b= sound.music_b
 
 
-
-
-
     # Lights
     Lights()
     pivot = Lights().pivot
@@ -171,14 +174,33 @@ try:
 
     # Animations
     player_walk = FrameAnimation3d('assets/blend/player_walk.obj',fps=1)
-
     rocket_entity = []
 
+    # Oxygen
     oxygen = SetOxygen().oxygen
 
 
+    trees = Entity()
 
 
+    def Vegetation():
+            tree_position_x = random.randrange(3,50)
+            tree_position_y = random.randrange(3,50)
+            tree_vec3 = Vec3(tree_position_x, 0, tree_position_y)
+            
+            origin = tree_vec3  # the ray should start slightly up from the ground so we can walk up slopes or walk over small objects.
+            hit_info = raycast(origin , tree_vec3, ignore=(player,), distance=.5, debug=False)
+            if not hit_info.hit:
+                print(dir(hit_info.distance))
+                print(hit_info.point)
+                tree = Entity(parent=trees, model='assets/blend/vegetation/tree.obj', color = color.red, position=(tree_vec3))#, collider="mesh")
+                game_data.append(tree)
+            else:
+                print("HIT")
+
+    for i in range(1,25):
+        Vegetation()
+        
     
     def update():
 
@@ -188,7 +210,18 @@ try:
 
 
 
-            
+
+##
+##        steps = Entity(parent=steps, model='plane', color = color.red, position=player.position, rotation=player.rotation)
+
+
+
+
+
+
+
+
+
         if held_keys['g']:
             save_game()
 
@@ -339,7 +372,6 @@ try:
 
 
 
-    game_data = []
 
     class Voxel(Button):
         def __init__(self, model, position = (0,0,0), texture = blocks[block_id]):
