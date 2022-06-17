@@ -33,5 +33,6 @@ Every month I will update the game.
 
 ![Ursina logo](https://raw.githubusercontent.com/luis605/Space-Exploration/main/docs/images/ursina_logo.png "Employee Data title")
 
+
 # License
-MIT. See LICENSE.md for details.
+MIT. See LICENSE for details.
