@@ -32,3 +32,6 @@ Every month I will update the game.
 ![Panda3d logo](https://raw.githubusercontent.com/luis605/Space-Exploration/main/docs/images/panda3d_logo1.jpg "Employee Data title")
 
 ![Ursina logo](https://raw.githubusercontent.com/luis605/Space-Exploration/main/docs/images/ursina_logo.png "Employee Data title")
+
+# License
+MIT. See LICENSE.md for details.
