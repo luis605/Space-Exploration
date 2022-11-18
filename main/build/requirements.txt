@@ -1,0 +1,6 @@
+ursina
+panda3d
+screeninfo
+numpy
+pillow
+noise
