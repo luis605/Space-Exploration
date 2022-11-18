@@ -1,0 +1,102 @@
+'''
+Copyright © 2022 <Luís Almeida>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+'''
+
+from ursina import *
+from ursina.window import instance as window
+from panda3d.core import GraphicsWindow
+
+import os
+
+class ExitButton(Button):
+    def __init__(self, music, player):
+        super().__init__(
+            name = 'exit_button',
+            eternal = True,
+            origin = (.5, .5),
+            # text_origin = (-.5,-.5),
+            position = window.top_right,
+            z = -999,
+            scale = (.05, .025),
+            color = color.gray,
+            highlight_color = color.red,
+            text = 'Exit'
+            )
+
+        self.music = music
+        self.player = player
+        
+
+
+        
+
+
+    def on_click(self):
+        print("Exiting - Space Exploration")
+
+        if window.windowed_position is not None:
+            window.fullscreen = not window.fullscreen
+
+        print("Finishing Application")
+
+        for e in camera.ui.children:
+            e.disable()
+            print(e)
+
+        exit_msg = Entity(parent=camera.ui, model='quad', texture='assets/images/leave_msg.png', scale_x=1.777, enabled = True)
+        exit_msg.fade_out(0, duration = 0)
+        exit_msg.fade_in(1, duration = 1)
+
+        
+        def black_screen():
+            camera.overlay.enabled = True
+            camera.overlay.fade_in(1, duration = 1)
+
+        invoke (black_screen, delay = 2)
+        try:
+            from game.main.GameSystem import globalSound
+
+            self.music = globalSound.music
+            self.music_b = globalSound.music_b
+            
+            self.music.pitch = 0.5
+
+            def final_pitch():
+                self.music.animate('pitch', 0.2)
+            invoke (final_pitch, delay = 3)
+
+            self.player.disable()
+            
+            invoke (base.destroy,delay = 4)
+            invoke (application.quit,delay = 5)
+
+        except:
+            print("Error while changing music PITCH at - exit_btn.py")
+
+        
+    def input(self, key):
+        if held_keys['shift'] and key == 'q' and not mouse.right:
+            self.on_click()
+
+
+if __name__ == '__main__':
+
+    '''
+    This is the button in the upper right corner.
+    You can click on it or press Shift+Q to close the program.
+    To disable it, set window.exit_button.enabled to False
+    '''
+    app = Ursina()
+    from ursina.prefabs.first_person_controller import FirstPersonController
+    player = FirstPersonController()
+    player.disable()
+    music = Audio('../../assets/audio/lost_in_space.wav', pitch=1, loop=True, autoplay=False)
+    window.exit_button.enabled = False
+    ExitButton(music, player)
+    app.run()
