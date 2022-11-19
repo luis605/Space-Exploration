@@ -4,3 +4,4 @@ screeninfo
 numpy
 pillow
 noise
+pandas
