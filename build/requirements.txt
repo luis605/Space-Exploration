@@ -1,0 +1,7 @@
+https://github.com/pokepetter/ursina/archive/master.zip
+panda3d
+screeninfo
+numpy
+pillow
+noise
+pandas
